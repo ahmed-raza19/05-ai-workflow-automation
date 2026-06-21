@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflow Ops Console</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+    <div class="page-shell">
+        <aside class="sidebar">
+            <div class="brand-block">
+                <span class="brand-kicker">AI Workflow Automation</span>
+                <h1>Ops Console</h1>
+                <p>
+                    Route support tickets with a polished triage dashboard built for speed,
+                    clarity, and escalation control.
+                </p>
+            </div>
+
+            <div class="sidebar-panel status-panel">
+                <p class="panel-label">System status</p>
+                <div class="status-row">
+                    <span class="status-dot" id="system-dot"></span>
+                    <span id="system-status">Loading...</span>
+                </div>
+                <p class="status-note" id="llm-state">Checking model availability...</p>
+            </div>
+
+            <div class="sidebar-panel examples-panel">
+                <p class="panel-label">Quick examples</p>
+                <button class="example-btn" data-name="Ava Thompson" data-subject="Refund not received"
+                    data-message="I requested a refund two weeks ago and have not seen the money returned to my card.">
+                    Billing delay
+                </button>
+                <button class="example-btn" data-name="Noah Patel" data-subject="Login page crashes"
+                    data-message="Every time I try to sign in, the app crashes after entering my password.">
+                    Technical issue
+                </button>
+                <button class="example-btn" data-name="Mia Chen" data-subject="Urgent legal concern"
+                    data-message="We detected an unauthorized charge and our legal team is considering action unless this is resolved immediately.">
+                    Escalation
+                </button>
+            </div>
+
+            <div class="sidebar-panel legend-panel">
+                <p class="panel-label">Decision flow</p>
+                <ul>
+                    <li>LLM first</li>
+                    <li>Rule fallback if needed</li>
+                    <li>Always returns a routed ticket</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="hero-card">
+                <div>
+                    <span class="eyebrow">Triage dashboard</span>
+                    <h2>Submit a ticket and see the routing decision instantly.</h2>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span id="tickets-total">--</span>
+                        <small>Tickets processed</small>
+                    </div>
+                    <div class="stat-card">
+                        <span>LLM</span>
+                        <small>Primary decision engine</small>
+                    </div>
+                    <div class="stat-card">
+                        <span>Fallback</span>
+                        <small>Always available</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="workspace-grid">
+                <article class="input-panel card">
+                    <div class="card-header">
+                        <h3>Ticket intake</h3>
+                        <p>Fill out a support ticket or load a sample from the sidebar.</p>
+                    </div>
+
+                    <form id="ticket-form" class="ticket-form">
+                        <label>
+                            Customer name
+                            <input id="customer-name" type="text" placeholder="Jane Doe" />
+                        </label>
+
+                        <label>
+                            Subject
+                            <input id="subject" type="text" placeholder="Payment failed at checkout" />
+                        </label>
+
+                        <label>
+                            Message
+                            <textarea id="message" rows="8" placeholder="Describe the issue in detail..."></textarea>
+                        </label>
+
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">Route ticket</button>
+                            <button type="button" id="reset-btn" class="secondary-btn">Reset</button>
+                        </div>
+                    </form>
+                </article>
+
+                <article class="output-panel card">
+                    <div class="card-header">
+                        <h3>Decision output</h3>
+                        <p>Structured routing, suggested reply, and human review flag.</p>
+                    </div>
+
+                    <div id="empty-state" class="empty-state">
+                        <p>Submit a ticket to generate a routing decision.</p>
+                    </div>
+
+                    <div id="result-wrap" class="result-wrap hidden">
+                        <div class="result-topline">
+                            <div>
+                                <span class="result-label">Ticket ID</span>
+                                <strong id="ticket-id">--</strong>
+                            </div>
+                            <div class="source-pill" id="decision-source">--</div>
+                        </div>
+
+                        <div class="decision-grid">
+                            <div class="decision-box">
+                                <span>Category</span>
+                                <strong id="category">--</strong>
+                            </div>
+                            <div class="decision-box">
+                                <span>Priority</span>
+                                <strong id="priority">--</strong>
+                            </div>
+                            <div class="decision-box">
+                                <span>Department</span>
+                                <strong id="department">--</strong>
+                            </div>
+                            <div class="decision-box">
+                                <span>Human review</span>
+                                <strong id="review-flag">--</strong>
+                            </div>
+                        </div>
+
+                        <div class="output-section">
+                            <h4>Summary</h4>
+                            <p id="summary">--</p>
+                        </div>
+
+                        <div class="output-section">
+                            <h4>Suggested reply</h4>
+                            <p id="reply" class="reply-block">--</p>
+                        </div>
+                    </div>
+
+                    <p id="feedback" class="feedback"></p>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

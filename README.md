@@ -2,7 +2,7 @@
 
 # ⚙️ AI Workflow Automation System
 
-### End-to-end customer support ticket triage and routing — LLM-powered decisions with a bulletproof rule-based fallback.
+### End-to-end customer support ticket triage and routing — LLM-powered decisions with a bulletproof rule-based fallback and a custom ops dashboard.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
@@ -35,6 +35,8 @@ Built as part of the **Calder AI/ML Internship** project assignment.
 - 📨 **Automatic department routing** based on ticket category
 - 🚨 **Human-review flagging** for legal, security, or critical issues
 - 📝 **Full audit logging** — every decision is logged to file and console
+- 🌐 **Custom dashboard UI** at `/` with live status, quick examples, and structured ticket results
+- 🔄 **Decision source tracking** so responses show whether the LLM or fallback rules handled the ticket
 - 🌐 **Clean FastAPI architecture** with Pydantic-validated schemas
 
 ## 🧠 How It Works
@@ -47,7 +49,7 @@ flowchart TD
     D --> C
     C --> E[📨 Route to Department]
     C --> F["📝 Log Decision<br/>(file + console)"]
-    E --> G["✅ JSON Response:<br/>category, priority, department,<br/>summary, suggested reply"]
+    E --> G["✅ JSON Response:<br/>category, priority, department,<br/>summary, suggested reply,<br/>decision_source"]
 ```
 
 ## 🛠️ Tech Stack
@@ -56,18 +58,21 @@ flowchart TD
 | --------------- | ---------------------------------------------- |
 | API Framework   | FastAPI + Uvicorn                              |
 | Decision Engine | Groq API (Llama 3.3 70B) + rule-based fallback |
+| Frontend        | HTML, CSS, and vanilla JavaScript              |
 | Validation      | Pydantic                                       |
-| Logging         | Python `logging` (file + console handlers)   |
+| Logging         | Python `logging` (file + console handlers)     |
 
 ## 📁 Project Structure
 
 ```
 ai-workflow-automation/
 ├── models.py            # Pydantic request/response schemas
-├── workflow.py           # LLM decision logic + rule-based fallback
-├── logger_config.py      # structured logging setup
-├── app.py                # FastAPI application
-├── logs/                 # workflow.log generated at runtime
+├── workflow.py          # LLM decision logic + rule-based fallback
+├── logger_config.py     # structured logging setup
+├── app.py               # FastAPI application
+├── templates/           # dashboard HTML
+├── static/              # dashboard CSS/JS
+├── logs/                # workflow.log generated at runtime
 ├── .env.example
 ├── requirements.txt
 └── README.md
@@ -107,14 +112,17 @@ GROQ_API_KEY=your_key_here
 uvicorn app:app --reload
 ```
 
+Open **http://127.0.0.1:8000/** for the custom ops dashboard.
+
 Open **http://127.0.0.1:8000/docs** for interactive Swagger documentation.
 
 ## 📡 API Reference
 
-| Method   | Endpoint           | Description                          |
-| -------- | ------------------ | ------------------------------------ |
-| `GET`  | `/`              | Health check                         |
-| `POST` | `/submit-ticket` | Submit a ticket for automated triage |
+| Method   | Endpoint           | Description                                  |
+| -------- | ------------------ | -------------------------------------------- |
+| `GET`    | `/`                | Dashboard UI                                 |
+| `GET`    | `/status`          | System status and LLM availability           |
+| `POST`   | `/submit-ticket`   | Submit a ticket for automated triage         |
 
 ### Example Request
 
@@ -138,7 +146,8 @@ curl -X POST http://127.0.0.1:8000/submit-ticket \
   "department": "Billing Department",
   "summary": "Customer was double-charged and is requesting a refund.",
   "suggested_reply": "Thanks for flagging this, Ali — I'm sorry for the inconvenience...",
-  "requires_human_review": false
+  "requires_human_review": false,
+  "decision_source": "llm"
 }
 ```
 
@@ -155,7 +164,18 @@ curl -X POST http://127.0.0.1:8000/submit-ticket \
 | ----------------------- | ------------------------------------------------------------------------- |
 | Hybrid LLM + rule-based | LLM handles nuance; rules guarantee the workflow never goes down          |
 | Output validation       | Category/priority are checked against an allowed set before being trusted |
-| Full logging            | Every stage is auditable — receipt, decision source, routing, failures   |
+| Decision source flag    | The response shows whether routing came from the LLM or fallback rules    |
+| Full logging            | Every stage is auditable — receipt, decision source, routing, failures    |
+
+## 🖥️ Dashboard Flow
+
+The custom root page is designed as an operations console instead of a plain API landing page:
+
+1. The sidebar shows current system status and a quick LLM availability indicator.
+2. Example tickets let you populate the form with one click.
+3. The main workspace sends the ticket to `POST /submit-ticket`.
+4. The response is rendered as a structured decision card, including `decision_source`.
+5. If the LLM fails or is unavailable, the backend falls back to the keyword-based rules and still returns a routed decision.
 
 This input → LLM-decision → fallback → structured-output → logging pattern
 can be repointed at other workflows (invoice processing, lead qualification,

@@ -1,65 +1,122 @@
-# AI Workflow Automation System
+<div align="center">
 
-An end-to-end automated workflow for **customer support ticket triage and
-routing**: incoming tickets are classified, prioritized, routed to the right
-department, and given a draft reply — automatically.
+# ⚙️ AI Workflow Automation System
 
-## Workflow
+### End-to-end customer support ticket triage and routing — LLM-powered decisions with a bulletproof rule-based fallback.
+
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![Groq](https://img.shields.io/badge/LLM-Groq%20Llama%203.3-F55036)
+![Pydantic](https://img.shields.io/badge/Pydantic-2.9-E92063)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+[Overview](#-overview) • [Features](#-features) • [How It Works](#-how-it-works) • [Getting Started](#-getting-started) • [API Reference](#-api-reference)
+
+</div>
+
+---
+
+## 📌 Overview
+
+A production-shaped automation workflow that takes a raw customer support
+ticket and, with zero human intervention, classifies it, prioritizes it,
+routes it to the right department, and drafts a reply — using an LLM
+(**Groq / Llama 3.3 70B**) for the decision-making step, with a fully
+independent rule-based fallback so the workflow **never goes down**, even if
+the LLM API is unavailable.
+
+Built as part of the **Calder AI/ML Internship** project assignment.
+
+## ✨ Features
+
+- 🧠 **LLM-based decision making** — category, priority, summary, and a drafted reply, all from one call
+- ⚙️ **Rule-based fallback** — guarantees uptime even without API access
+- ✅ **Output validation** — invalid/malformed LLM responses are caught and rerouted to the fallback automatically
+- 📨 **Automatic department routing** based on ticket category
+- 🚨 **Human-review flagging** for legal, security, or critical issues
+- 📝 **Full audit logging** — every decision is logged to file and console
+- 🌐 **Clean FastAPI architecture** with Pydantic-validated schemas
+
+## 🧠 How It Works
+
+```mermaid
+flowchart TD
+    A["🎫 Incoming Ticket<br/>(name, subject, message)"] --> B["🧠 LLM Decision<br/>(Groq Llama 3.3 70B)"]
+    B -->|Success & Valid JSON| C[Structured Decision]
+    B -->|"Failure / Timeout / Invalid"| D["⚙️ Rule-Based Fallback<br/>(keyword heuristics)"]
+    D --> C
+    C --> E[📨 Route to Department]
+    C --> F["📝 Log Decision<br/>(file + console)"]
+    E --> G["✅ JSON Response:<br/>category, priority, department,<br/>summary, suggested reply"]
+```
+
+## 🛠️ Tech Stack
+
+| Component       | Technology                                     |
+| --------------- | ---------------------------------------------- |
+| API Framework   | FastAPI + Uvicorn                              |
+| Decision Engine | Groq API (Llama 3.3 70B) + rule-based fallback |
+| Validation      | Pydantic                                       |
+| Logging         | Python `logging` (file + console handlers)   |
+
+## 📁 Project Structure
 
 ```
-Input: customer ticket (name, subject, message)
-        │
-        ▼
-LLM-based decision making (Groq / Llama 3.3)
-  → category, priority, summary, suggested reply, human-review flag
-        │
-        ├── LLM call fails / times out / returns invalid JSON
-        │         │
-        │         ▼
-        │   Rule-based fallback decision system (keyword heuristics)
-        │
-        ▼
-Structured JSON output + routed department + full audit log
-```
-
-## Project Structure
-
-```
-05-ai-workflow-automation/
+ai-workflow-automation/
 ├── models.py            # Pydantic request/response schemas
-├── workflow.py            # LLM decision logic + rule-based fallback
-├── logger_config.py       # structured logging setup
-├── app.py                 # FastAPI application
-├── logs/                  # workflow.log generated at runtime
+├── workflow.py           # LLM decision logic + rule-based fallback
+├── logger_config.py      # structured logging setup
+├── app.py                # FastAPI application
+├── logs/                 # workflow.log generated at runtime
 ├── .env.example
 ├── requirements.txt
 └── README.md
 ```
 
-## Setup
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- A free [Groq API key](https://console.groq.com) (optional — see note below)
+
+### Installation
 
 ```bash
+git clone https://github.com/<your-username>/ai-workflow-automation.git
+cd ai-workflow-automation
+
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
+
 pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Get a **free** Groq API key at [console.groq.com](https://console.groq.com) and
-add it to `.env`. (The workflow still runs without a key — it automatically
-uses the rule-based fallback, so the project is demoable with zero setup cost.)
+Add your free Groq key to `.env`:
 
-## Usage
+```
+GROQ_API_KEY=your_key_here
+```
 
-### 1. Run the API
+> 💡 No key? No problem — the workflow automatically uses its rule-based fallback, so the project is fully demoable with zero setup cost.
+
+### Run the API
 
 ```bash
 uvicorn app:app --reload
 ```
 
-Visit `http://127.0.0.1:8000/docs` for interactive Swagger documentation.
+Open **http://127.0.0.1:8000/docs** for interactive Swagger documentation.
 
-### 2. Submit a ticket
+## 📡 API Reference
+
+| Method   | Endpoint           | Description                          |
+| -------- | ------------------ | ------------------------------------ |
+| `GET`  | `/`              | Health check                         |
+| `POST` | `/submit-ticket` | Submit a ticket for automated triage |
+
+### Example Request
 
 ```bash
 curl -X POST http://127.0.0.1:8000/submit-ticket \
@@ -71,7 +128,7 @@ curl -X POST http://127.0.0.1:8000/submit-ticket \
   }'
 ```
 
-Response:
+### Example Response
 
 ```json
 {
@@ -85,28 +142,34 @@ Response:
 }
 ```
 
-### 3. Check the logs
-
-Every ticket is logged with its routing decision, decision source
-(`llm` or `rule_based_fallback`), and timestamp:
+### Sample Log Output
 
 ```
-2026-06-20 16:26:09 | INFO | Ticket af1798c9 received from Ali Raza: 'Refund not received'
-2026-06-20 16:26:09 | INFO | Ticket af1798c9 routed to Billing Department | priority=Medium | source=llm | human_review=False
+2026-06-20 16:26:09 | INFO    | Ticket af1798c9 received from Ali Raza: 'Refund not received'
+2026-06-20 16:26:09 | INFO    | Ticket af1798c9 routed to Billing Department | priority=Medium | source=llm | human_review=False
 ```
 
-## Design Notes
+## 🧩 Design Notes
 
-- **Hybrid decision system**: the LLM handles nuanced classification and
-  drafts replies; a keyword-based fallback guarantees the workflow never
-  goes down even if the LLM API is unavailable, rate-limited, or returns
-  malformed output.
-- **Validation**: LLM output is validated against allowed category/priority
-  values before being trusted — invalid responses automatically trigger the
-  fallback path instead of propagating bad data.
-- **Error handling & logging**: every stage (receipt, decision, routing,
-  failures) is logged to both console and `logs/workflow.log` for auditability.
-- **Adapting this template**: the same input → LLM-decision → fallback →
-  structured-output → logging pattern can be repointed at other workflows
-  (invoice processing, lead qualification, content moderation, etc.) by
-  swapping out the prompt and category set in `workflow.py`.
+| Decision                | Why                                                                       |
+| ----------------------- | ------------------------------------------------------------------------- |
+| Hybrid LLM + rule-based | LLM handles nuance; rules guarantee the workflow never goes down          |
+| Output validation       | Category/priority are checked against an allowed set before being trusted |
+| Full logging            | Every stage is auditable — receipt, decision source, routing, failures   |
+
+This input → LLM-decision → fallback → structured-output → logging pattern
+can be repointed at other workflows (invoice processing, lead qualification,
+content moderation) by swapping out the prompt and category set in
+`workflow.py`.
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Built by [Your Name]** · [GitHub](https://github.com/<your-username>) · [LinkedIn](https://linkedin.com/in/<your-profile>)
+
+</div>
